@@ -3,3 +3,8 @@ controllers:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
+
+# Ruta para hacer que el login sea la página de inicio
+app_home:
+    path: /
+    controller: App\Controller\LoginController::index
