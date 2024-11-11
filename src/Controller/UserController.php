@@ -69,10 +69,52 @@ class UserController extends AbstractController
     }
 
     #[Route('/user/delete', name: 'user_delete')]
-    public function delete(): Response
+    public function userDelete(Request $request, EntityManagerInterface $entityManager): Response
     {
+        // Crear un formulario simple para ingresar el ID
+        $defaultData = ['message' => 'Ingrese el ID del usuario a eliminar'];
+        $form = $this->createFormBuilder($defaultData)
+            ->add('userId', TextType::class, [
+                'label' => 'ID del Usuario',
+                'required' => true
+            ])
+            
+            ->getForm();
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $data = $form->getData();
+            $userId = $data['userId'];
+
+            // Buscar al usuario por ID
+            $user = $entityManager->getRepository(User::class)->find($userId);
+
+            if ($user) {
+                // Eliminar el usuario
+                $entityManager->remove($user);
+                $entityManager->flush();
+
+                // Mostrar mensaje de éxito
+                $this->addFlash('success', 'Usuario eliminado exitosamente');
+
+                // Redefinir el formulario vacío para limpiar el campo
+                $form = $this->createFormBuilder()
+                ->add('userId', TextType::class, [
+                    'label' => 'ID del Usuario',
+                    'required' => true
+                ])
+                ->getForm();
+
+
+            } else {
+                // Mostrar mensaje de error si no se encuentra el usuario
+                $this->addFlash('error', 'Usuario no encontrado');
+            }
+        }
+
         return $this->render('user/delete.html.twig', [
-            'controller_name' => 'UserController',
+            'form' => $form->createView(),
         ]);
     }
 
