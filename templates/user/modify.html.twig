@@ -1,21 +1,100 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello UserController!{% endblock %}
+{% block title %}Modificar Usuario{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+<div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="card p-4" style="max-width: 600px; width: 100%;">
+        <h2 class="card-title mb-4 text-center">Modificar Usuario</h2>
 
-<div class="example-wrapper">
-    <h1>Modificar Trabajador</h1>
+        <!-- Mostrar mensajes flash -->
+        {% for label, messages in app.flashes %}
+            <div class="alert alert-{{ label }}">
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endfor %}
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>C:/Users/Lucas/Documents/WorkspaceSymfony/jobtime/src/Controller/UserController.php</code></li>
-        <li>Your template at <code>C:/Users/Lucas/Documents/WorkspaceSymfony/jobtime/templates/user/index.html.twig</code></li>
-    </ul>
-    
+        <div class="mb-3">
+            <label for="userSelect" class="form-label">Seleccione un Usuario</label>
+            <select id="userSelect" class="form-select" onchange="loadUserData(this.value)">
+                <option value="">-- Seleccione un Usuario --</option>
+                {% for user in users %}
+                    <option value="{{ user.id }}">{{ user.id }} - {{ user.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Aquí se mostrará el formulario dinámicamente -->
+        <div id="userForm" style="display: none;">
+            {{ form_start(form, {'attr': {'id': 'modifyUserForm'}}) }}
+
+            <!-- Campo oculto para el ID del usuario seleccionado -->
+            <input type="hidden" name="user_id" id="hidden_user_id">
+
+            <div class="mb-3">
+                {{ form_label(form.name, 'Nombre', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.name, {'attr': {'class': 'form-control', 'id': 'user_name'}}) }}
+                {{ form_errors(form.name) }}
+            </div>
+
+            <div class="mb-3">
+                {{ form_label(form.email, 'Correo Electrónico', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.email, {'attr': {'class': 'form-control', 'id': 'user_email'}}) }}
+                {{ form_errors(form.email) }}
+            </div>
+
+            <div class="mb-3">
+                {{ form_label(form.phone, 'Teléfono', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.phone, {'attr': {'class': 'form-control', 'id': 'user_phone'}}) }}
+                {{ form_errors(form.phone) }}
+            </div>
+
+            <div class="mb-3">
+                {{ form_label(form.id, 'Identificador', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.id, {'attr': {'class': 'form-control', 'id': 'user_id'}}) }}
+                {{ form_errors(form.id) }}
+            </div>
+
+            <!-- Campo de Contraseña -->
+            <div class="mb-3">
+                {{ form_label(form.password, 'Nueva Contraseña (Opcional)', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.password, {'attr': {'class': 'form-control', 'id': 'user_password'}}) }}
+                {{ form_errors(form.password) }}
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="{{ path('app_user') }}" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
 </div>
+
+<script>
+    function loadUserData(userId) {
+        if (userId) {
+            fetch(`/user/get/${userId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('userForm').style.display = 'block';
+                        document.getElementById('hidden_user_id').value = userId;
+                        document.getElementById('user_id').value = data.user.id;
+                        document.getElementById('user_name').value = data.user.name;
+                        document.getElementById('user_email').value = data.user.email;
+                        document.getElementById('user_phone').value = data.user.phone;
+                        document.getElementById('user_password').value = '';
+                    } else {
+                        alert('Usuario no encontrado');
+                    }
+                });
+        } else {
+            document.getElementById('userForm').style.display = 'none';
+        }
+    }
+</script>
 {% endblock %}
