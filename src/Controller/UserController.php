@@ -36,21 +36,31 @@ class UserController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-
-            // Codificar la contraseña antes de persistir el usuario
-            $hashedPassword = $passwordHasher->hashPassword(
-                $user,
-                $user->getPassword() // Obtén la contraseña sin cifrar del objeto User
-            );
-            $user->setPassword($hashedPassword); // Almacena la contraseña codificada
-            $user->setRoles(['ROLE_USER']);
-            // Se guarda el usuario en la base de datos
-            $entityManager->persist($user);
-            $entityManager->flush();
-
-            // Limpiar el formulario y mostrar un mensaje de éxito
-            $this->addFlash('success', 'Usuario registrado exitosamente');
-            return $this->redirectToRoute('user_register'); // Asegúrate de redirigir a la ruta correcta
+            // Comprobar si el ID o el nombre ya existen
+            $existingUserById = $entityManager->getRepository(User::class)->find($user->getId());
+            $existingUserByName = $entityManager->getRepository(User::class)->findOneBy(['name' => $user->getName()]);
+            $existingUserByEmail = $entityManager->getRepository(User::class)->findOneBy(['email' => $user->getEmail()]);
+    
+            if ($existingUserById) {
+                $this->addFlash('error', 'El ID ingresado ya está en uso.');
+            } elseif ($existingUserByName) {
+                $this->addFlash('error', 'El nombre de usuario ingresado ya está en uso.');
+            } elseif ($existingUserByEmail) {
+                $this->addFlash('error', 'El email de usuario ingresado ya está en uso.');    
+            } else {
+                // Codificar la contraseña antes de persistir el usuario
+                $hashedPassword = $passwordHasher->hashPassword($user, $user->getPassword());
+                $user->setPassword($hashedPassword);
+                $user->setRoles(['ROLE_USER']);
+    
+                // Persistir el usuario en la base de datos
+                $entityManager->persist($user);
+                $entityManager->flush();
+    
+                // Limpiar el formulario y mostrar un mensaje de éxito
+                $this->addFlash('success', 'Usuario registrado exitosamente');
+                return $this->redirectToRoute('user_register');
+            }
         }
 
         return $this->render('user/register.html.twig', [

@@ -20,19 +20,27 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ path('app_user') }}">Inicio</a>
                         </li>
+
+                        {% if is_granted('ROLE_ADMIN') %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ path('user_register') }}">Registrar Trabajador</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ path('user_modify') }}">Modificar Trabajador</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ path('user_delete') }}">Eliminar Trabajador</a>
+                            </li>
+                        {% endif %}
+
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ path('user_register') }}">Registrar Trabajador</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('user_modify') }}">Modificar Trabajador</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('user_delete') }}">Eliminar Trabajador</a>
+                            <a class="nav-link" href="{{ path('app_logout') }}">Salir</a>
                         </li>
                     </ul>
                 </nav>
             </div>
         </header>
+
 
 
 
