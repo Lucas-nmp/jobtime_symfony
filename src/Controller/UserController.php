@@ -84,7 +84,7 @@ class UserController extends AbstractController
     }
         */
 
-            
+    /*        
     #[Route('/user', name: 'app_user')]
     public function index(Request $request, EntityManagerInterface $entityManager, Security $security, PdfGenerator $pdfGenerator): Response
     {
@@ -111,7 +111,7 @@ class UserController extends AbstractController
         // Inicializar variables de rango de fechas
         $startDate = null;
         $endDate = null;
-        $formattedDate = "Por favor, seleccione un año."; // Mensaje por defecto si no se selecciona año
+        $formattedDate = "Por favor, seleccione un año"; // Mensaje por defecto si no se selecciona año
     
         // Definir rango de fechas según los selectores
         if ($year) {
@@ -154,6 +154,89 @@ class UserController extends AbstractController
             'formattedDate' => $formattedDate,
         ]);
     }
+        */
+    #[Route('/user', name: 'app_user')]
+    public function index(Request $request, EntityManagerInterface $entityManager, Security $security, PdfGenerator $pdfGenerator): Response
+    {
+        // Obtener todos los usuarios para el spinner
+        $users = $entityManager->getRepository(User::class)->findAll();
+        // Obtener el usuario logeado
+        $user = $security->getUser();
+        // Obtener el rol del usuario logeado
+        $role = $user->getRoles()[0] ?? null;
+    
+        // Obtener parámetros de fecha y usuario
+        $userId = $request->query->get('userId');
+        $year = $request->query->get('year');
+        $month = $request->query->get('month');
+        $day = $request->query->get('day');
+    
+        // Inicializar variables de rango de fechas
+        $startDate = null;
+        $endDate = null;
+        $formattedDate = "Por favor, seleccione un año"; // Mensaje por defecto si no se selecciona año
+    
+        // Definir rango de fechas según los selectores
+        if ($year) {
+            $startDate = new DateTimeImmutable("$year-01-01 00:00:00");
+            $endDate = new DateTimeImmutable("$year-12-31 23:59:59");
+            $formattedDate = $year;
+    
+            if ($month) {
+                $startDate = $startDate->setDate($year, $month, 1);
+                $endDate = $startDate->setDate($year, $month, (int) $startDate->format('t'))->setTime(23, 59, 59);
+                $formattedDate = sprintf('%02d-%s', $month, $year);
+    
+                if ($day) {
+                    $startDate = $startDate->setDate($year, $month, $day)->setTime(0, 0, 0);
+                    $endDate = $startDate->setDate($year, $month, $day)->setTime(23, 59, 59);
+                    $formattedDate = sprintf('%02d-%02d-%s', $day, $month, $year);
+                }
+            }
+        }
+    
+        // Construir el repositorio de fichajes y aplicar filtro de fechas
+        $query = $entityManager->createQueryBuilder()
+            ->select('s')
+            ->from(Signing::class, 's')
+            ->where('s.user = :userId')
+            ->setParameter('userId', $userId);
+    
+        // Si el rango de fechas está definido, agregar el filtro
+        if ($startDate && $endDate) {
+            $query->andWhere('s.datetime BETWEEN :startDate AND :endDate')
+                    ->setParameter('startDate', $startDate)
+                    ->setParameter('endDate', $endDate);
+        }
+    
+        // Ejecutar consulta de fichajes
+        $signings = $query->getQuery()->getResult();
+    
+        // Obtener total de horas trabajadas en el rango de fechas
+        $totalHours = null; // Valor predeterminado
+
+        if ($startDate && $endDate) {
+            $signingsRepo = $entityManager->getRepository(Signing::class);
+            $totalHours = $signingsRepo->getTotalHoursWorked($userId, $startDate, $endDate);
+        } else {
+            // Opcionalmente, puedes establecer un mensaje o valor predeterminado para cuando no se selecciona una fecha
+            $totalHours = "Por favor, seleccione una fecha válida";
+        }
+        //$signingsRepo = $entityManager->getRepository(Signing::class);
+        //$totalHours = $signingsRepo->getTotalHoursWorked($userId, $startDate, $endDate);
+    
+        return $this->render('user/index.html.twig', [
+            'users' => $users,
+            'user' => $user,
+            'role' => $role,
+            'signings' => $signings,
+            "totalHours" => $totalHours,
+            'selectedDate' => $formattedDate, // Pasar la fecha seleccionada al template
+            'formattedDate' => $formattedDate,
+        ]);
+    }
+        
+
 
     #[Route('/user/print-pdf', name: 'app_user_print_pdf')]
     public function printPdf(Request $request, PdfGenerator $pdfGenerator): Response
