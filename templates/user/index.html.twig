@@ -56,9 +56,9 @@
                 </select>
             </div>
         </div>
-
+        
         <div class="mb-3 text-center">
-            <button class="btn btn-primary" onclick="showSignings()">Ver fichajes</button>
+            <button class="btn btn-primary w-100" onclick="showSignings()">Ver fichajes</button>
         </div>
 
         <div class="mb-3">
@@ -86,8 +86,10 @@
                         {% else %}
                             {{ selectedDate }}
                         {% endif %}">
-                        
-            <button type="submit" class="btn btn-primary">Imprimir PDF</button>
+            <div class="mb-3 text-center">
+                <button type="submit" class="btn btn-primary w-100">Imprimir PDF</button>
+            </div>            
+            
         </form>
 
 
