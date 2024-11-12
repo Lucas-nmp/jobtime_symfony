@@ -1,21 +1,142 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello UserController!{% endblock %}
+{% block title %}Ver fichajes{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+<h2 class="card-title mb-4 text-center">Ver fichajes</h2>
+<div class="d-flex justify-content-center align-items-center" style="min-height: 20vh;">
+    <div class="card p-4" style="max-width: 600px; width: 100%;">
+        <div class="mb-3">
+            {% if role == 'ROLE_ADMIN' %}
+                <label for="userSelect" class="form-label">Seleccione un Usuario</label>
+                <select id="userSelect" class="form-select" onchange="loadUserData(this.value)">
+                    <option value="">-- Seleccione un Usuario --</option>
+                    {% for user in users %}
+                        <option value="{{ user.id }}">{{ user.id }} - {{ user.name }}</option>
+                    {% endfor %}
+                </select>
+            {% else %}
+                <label for="userSelect" class="form-label">Usuario</label>
+                <select id="userSelect" class="form-select" onchange="loadUserData(this.value)">
+                    <option value="">{{ user.id }} - {{ user.name }}</option>
+                </select>
+            {% endif %}
+        </div>
 
-<div class="example-wrapper">
-    <h1>Ver fichajes de trabajador</h1>
+        <!-- Selectores de Fecha -->
+        <div class="row mb-3">
+            <div class="col">
+                <label for="yearSelect" class="form-label">Año</label>
+                <select id="yearSelect" class="form-select">
+                    <option value="">Seleccione año</option>
+                </select>
+            </div>
+            <div class="col">
+                <label for="monthSelect" class="form-label">Mes</label>
+                <select id="monthSelect" class="form-select" onchange="updateDays()">
+                    <option value="">Seleccione mes</option>
+                    <option value="1">Enero</option>
+                    <option value="2">Febrero</option>
+                    <option value="3">Marzo</option>
+                    <option value="4">Abril</option>
+                    <option value="5">Mayo</option>
+                    <option value="6">Junio</option>
+                    <option value="7">Julio</option>
+                    <option value="8">Agosto</option>
+                    <option value="9">Septiembre</option>
+                    <option value="10">Octubre</option>
+                    <option value="11">Noviembre</option>
+                    <option value="12">Diciembre</option>
+                </select>
+            </div>
+            <div class="col">
+                <label for="daySelect" class="form-label">Día</label>
+                <select id="daySelect" class="form-select">
+                    <option value="">Seleccione día</option>
+                </select>
+            </div>
+        </div>
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>C:/Users/Lucas/Documents/WorkspaceSymfony/jobtime/src/Controller/UserController.php</code></li>
-        <li>Your template at <code>C:/Users/Lucas/Documents/WorkspaceSymfony/jobtime/templates/user/index.html.twig</code></li>
-    </ul>
-    
+        <div class="mb-3 text-center">
+            <button class="btn btn-primary" onclick="showSignings()">Ver fichajes</button>
+        </div>
+
+        <div class="mb-3">
+            <h5>Fichajes:</h5>
+            <ul id="signingsList">
+                {% for signing in signings %}
+                    <li>
+                        Fecha: {{ signing.datetime|date("d-m-Y") }} - Hora: {{ signing.datetime|date("H:i:s") }}
+                    </li>
+                {% endfor %}
+            </ul>
+
+            <div class="mt-3">
+                <h5>Total de horas trabajadas el {{ formattedDate }}: {{ totalHours }}</h5>
+            </div>
+        </div>
+        <!-- Botón para generar el PDF -->
+        <form action="{{ path('app_user_print_pdf') }}" method="get">
+            <input type="hidden" name="totalHours" value="{{ totalHours }}">
+            <input type="hidden" name="formattedDate" value="{{ selectedDate|date('d-m-Y') }}">
+            <button type="submit" class="btn btn-primary">Imprimir PDF</button>
+        </form>
+
+
+
+    </div>
 </div>
+
+<script>
+
+    function showSignings() {
+        const userId = document.getElementById('userSelect').value;
+        const year = document.getElementById('yearSelect').value;
+        const month = document.getElementById('monthSelect').value;
+        const day = document.getElementById('daySelect').value;
+        
+        window.location.href = `/user?userId=${userId}&year=${year}&month=${month}&day=${day}`;
+    }
+
+    // Generar los años desde el año actual hasta 4 años atrás
+    const currentYear = new Date().getFullYear();
+    const yearSelect = document.getElementById('yearSelect');
+    for (let i = 0; i < 5; i++) {
+        const option = document.createElement('option');
+        option.value = currentYear - i;
+        option.textContent = currentYear - i;
+        yearSelect.appendChild(option);
+    }
+
+    // Función para actualizar los días en función del mes seleccionado
+    function updateDays() {
+        const monthSelect = document.getElementById('monthSelect');
+        const daySelect = document.getElementById('daySelect');
+        const selectedMonth = monthSelect.value;
+        
+        // Vaciar opciones de día
+        daySelect.innerHTML = '<option value="">Seleccione día</option>';
+        
+        // Definir la cantidad de días en función del mes seleccionado
+        let daysInMonth;
+        if (selectedMonth === '2') { // Febrero
+            const selectedYear = parseInt(yearSelect.value);
+            daysInMonth = (selectedYear % 4 === 0 && selectedYear % 100 !== 0) || selectedYear % 400 === 0 ? 29 : 28;
+        } else if (['4', '6', '9', '11'].includes(selectedMonth)) { // Abril, Junio, Septiembre, Noviembre
+            daysInMonth = 30;
+        } else {
+            daysInMonth = 31;
+        }
+
+        // Añadir los días al selector
+        for (let i = 1; i <= daysInMonth; i++) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = i;
+            daySelect.appendChild(option);
+        }
+    }
+</script>
 {% endblock %}
+
+
