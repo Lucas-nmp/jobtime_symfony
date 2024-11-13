@@ -211,7 +211,10 @@ class UserController extends AbstractController
     
         // Ejecutar consulta de fichajes
         $signings = $query->getQuery()->getResult();
-    
+        
+        $session = $request->getSession();
+        $session->set('signings', $signings);
+
         // Obtener total de horas trabajadas en el rango de fechas
         $totalHours = null; // Valor predeterminado
 
@@ -222,8 +225,7 @@ class UserController extends AbstractController
             // Opcionalmente, puedes establecer un mensaje o valor predeterminado para cuando no se selecciona una fecha
             $totalHours = "Por favor, seleccione una fecha válida";
         }
-        //$signingsRepo = $entityManager->getRepository(Signing::class);
-        //$totalHours = $signingsRepo->getTotalHoursWorked($userId, $startDate, $endDate);
+        
     
         return $this->render('user/index.html.twig', [
             'users' => $users,
@@ -237,24 +239,26 @@ class UserController extends AbstractController
     }
         
 
-
+    
     #[Route('/user/print-pdf', name: 'app_user_print_pdf')]
-    public function printPdf(Request $request, PdfGenerator $pdfGenerator): Response
+    public function printPdf(Request $request, PdfGenerator $pdfGenerator)
     {
-        // Recoger los parámetros para generar el contenido del PDF
+        $userName = $request->query->get('userName');
         $totalHours = $request->query->get('totalHours');
         $formattedDate = $request->query->get('formattedDate');
-        
-        // Crear el contenido HTML del PDF
-        $htmlContent = "<h1>Total de horas trabajadas: $totalHours</h1>";
-        $htmlContent .= "<p>Fecha seleccionada: $formattedDate</p>";
-        
-        // Llamar al generador de PDF
-        $pdfGenerator->generatePdf($htmlContent, 'total_horas.pdf');
-        
-        return new Response();
+        $session = $request->getSession();
+        $signings = $session->get('signings');
+
+        $htmlContent = $this->renderView('pdf/signings.html.twig', [
+            'userName' => $userName,
+            'totalHours' => $totalHours,
+            'formattedDate' => $formattedDate,
+            'signings' => $signings,
+        ]);
+
+        return $pdfGenerator->generatePdf($htmlContent, 'fichajes.pdf');
     }
-        
+      
         
 
     #[Route('/user/register', name: 'user_register')]

@@ -9,16 +9,16 @@
         <div class="mb-3">
             {% if role == 'ROLE_ADMIN' %}
                 <label for="userSelect" class="form-label">Seleccione un Usuario</label>
-                <select id="userSelect" class="form-select" onchange="loadUserData(this.value)">
+                <select id="userSelect" class="form-select">
                     <option value="">-- Seleccione un Usuario --</option>
                     {% for user in users %}
-                        <option value="{{ user.id }}">{{ user.id }} - {{ user.name }}</option>
+                        <option value="{{ user.id }}" data-name="{{ user.name }}">{{ user.id }} - {{ user.name }}</option>
                     {% endfor %}
                 </select>
             {% else %}
                 <label for="userSelect" class="form-label">Usuario</label>
-                <select id="userSelect" class="form-select" onchange="loadUserData(this.value)">
-                    <option value="">{{ user.id }} - {{ user.name }}</option>
+                <select id="userSelect" class="form-select" disabled>
+                    <option value="{{ user.id }}" data-name="{{ user.name }}">{{ user.id }} - {{ user.name }}</option>
                 </select>
             {% endif %}
         </div>
@@ -72,38 +72,53 @@
             </ul>
 
             <div class="mt-3">
-                <h5>Total de horas trabajadas el {{ formattedDate }}: {{ totalHours }}</h5>
+                {% if totalHours == 0 or totalHours == "Por favor, seleccione una fecha válida" %}
+                    <h5>Total:</h5>
+                {% else %}    
+                    <h5>Total horas trabajadas por   el {{ formattedDate }}: {{ totalHours }}</h5>
+                {% endif %}    
             </div>
         </div>
-        <!-- Botón para generar el PDF -->
-        <form action="{{ path('app_user_print_pdf') }}" method="get">
+
+        <!-- Formulario para Imprimir PDF -->
+        <form action="{{ path('app_user_print_pdf') }}" method="get" target="_blank">
+            <input type="hidden" name="userName" id="userName" value="">
             <input type="hidden" name="totalHours" value="{{ totalHours }}">
-            
-            {# Solo formatear la fecha si es una fecha completa (año, mes y día) #}
-            <input type="hidden" name="formattedDate" 
-                value="{% if selectedDate matches '/^\d{2}-\d{2}-\d{4}$/' %}
-                            {{ selectedDate|date('d-m-Y') }}
-                        {% else %}
-                            {{ selectedDate }}
-                        {% endif %}">
+            <input type="hidden" name="formattedDate" value="{{ formattedDate }}">
+            <input type="hidden" name="signings" value="{{ signings|json_encode }}">
+
             <div class="mb-3 text-center">
                 <button type="submit" class="btn btn-primary w-100">Imprimir PDF</button>
             </div>            
-            
         </form>
-
-
-
+        
     </div>
 </div>
 
 <script>
 
+    function getSelectedUserName() {
+        const selectElement = document.getElementById('userSelect');
+        const selectedOption = selectElement.options[selectElement.selectedIndex];
+        const userName = selectedOption.getAttribute('data-name');
+        console.log(userName);  // Aquí obtienes el nombre del usuario seleccionado
+    }
+
     function showSignings() {
-        const userId = document.getElementById('userSelect').value;
+        
+        const userSelect = document.getElementById('userSelect');
+        const userId = userSelect.value;
+        const userName = userSelect.options[userSelect.selectedIndex].getAttribute('data-name');
         const year = document.getElementById('yearSelect').value;
         const month = document.getElementById('monthSelect').value;
         const day = document.getElementById('daySelect').value;
+
+        document.getElementById('userName').value = userName;
+
+        //const userId = document.getElementById('userSelect').value;
+        //const year = document.getElementById('yearSelect').value;
+        //const month = document.getElementById('monthSelect').value;
+        //const day = document.getElementById('daySelect').value;
         
         window.location.href = `/user?userId=${userId}&year=${year}&month=${month}&day=${day}`;
     }
