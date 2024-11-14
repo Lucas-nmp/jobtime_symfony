@@ -1,12 +1,11 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Modificar Usuario{% endblock %}
+{% block title %}Añadir Fichaje Manualmente{% endblock %}
 
 {% block body %}
 <h2 class="card-title mb-4 text-center">Añadir Fichaje Manualmente</h2>
 <div class="d-flex justify-content-center align-items-center" style="min-height: 30vh;">
     <div class="card p-4" style="max-width: 600px; width: 100%;">
-        
 
         <!-- Mostrar mensajes flash -->
         {% for label, messages in app.flashes %}
@@ -17,51 +16,66 @@
             </div>
         {% endfor %}
 
-        <div class="mb-3">
-            <label for="userSelect" class="form-label">Seleccione un Usuario</label>
-            <select id="userSelect" class="form-select" onchange="loadUserData(this.value)">
-                <option value="">-- Seleccione un Usuario --</option>
-                {% for user in users %}
-                    <option value="{{ user.id }}">{{ user.id }} - {{ user.name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <!-- Selectores de Fecha -->
-        <div class="row mb-3">
-            <div class="col">
-                <label for="yearSelect" class="form-label">Año</label>
-                <select id="yearSelect" class="form-select">
-                    <option value="">Seleccione año</option>
+        <form method="POST" action="{{ path('sing_up') }}">
+            <!-- Selector de Trabajador -->
+            <div class="mb-3">
+                <label for="userSelect" class="form-label">Seleccione un Trabajador</label>
+                <select id="userSelect" name="user_id" class="form-select">
+                    <option value="">-- Seleccione un Trabajador --</option>
+                    {% for user in users %}
+                        <option value="{{ user.id }}">{{ user.id }} - {{ user.name }}</option>
+                    {% endfor %}
                 </select>
             </div>
-            <div class="col">
-                <label for="monthSelect" class="form-label">Mes</label>
-                <select id="monthSelect" class="form-select" onchange="updateDays()">
-                    <option value="">Seleccione mes</option>
-                    <option value="1">Enero</option>
-                    <option value="2">Febrero</option>
-                    <option value="3">Marzo</option>
-                    <option value="4">Abril</option>
-                    <option value="5">Mayo</option>
-                    <option value="6">Junio</option>
-                    <option value="7">Julio</option>
-                    <option value="8">Agosto</option>
-                    <option value="9">Septiembre</option>
-                    <option value="10">Octubre</option>
-                    <option value="11">Noviembre</option>
-                    <option value="12">Diciembre</option>
-                </select>
-            </div>
-            <div class="col">
-                <label for="daySelect" class="form-label">Día</label>
-                <select id="daySelect" class="form-select">
-                    <option value="">Seleccione día</option>
-                </select>
-            </div>
-        </div>
+            <!-- Fin Selector de Trabajador -->
 
+            <!-- Selector de Fechas -->
+            <div class="row mb-3">
+                <div class="col">
+                    <label for="yearSelect" class="form-label">Año</label>
+                    <select id="yearSelect" name="year" class="form-select">
+                        <option value="">Seleccione año</option>
+                    </select>
+                </div>
+                <div class="col">
+                    <label for="monthSelect" class="form-label">Mes</label>
+                    <select id="monthSelect" name="month" class="form-select" onchange="updateDays()">
+                        <option value="">Seleccione mes</option>
+                        <option value="1">Enero</option>
+                        <option value="2">Febrero</option>
+                        <option value="3">Marzo</option>
+                        <option value="4">Abril</option>
+                        <option value="5">Mayo</option>
+                        <option value="6">Junio</option>
+                        <option value="7">Julio</option>
+                        <option value="8">Agosto</option>
+                        <option value="9">Septiembre</option>
+                        <option value="10">Octubre</option>
+                        <option value="11">Noviembre</option>
+                        <option value="12">Diciembre</option>
+                    </select>
+                </div>
+                <div class="col">
+                    <label for="daySelect" class="form-label">Día</label>
+                    <select id="daySelect" name="day" class="form-select">
+                        <option value="">Seleccione día</option>
+                    </select>
+                </div>
+            </div>
+            <!-- Fin Selector de Fechas -->
 
+            <!-- Selector de Horas -->
+            <div class="row mb-3">
+                <label for="timeInput" class="form-label">Hora de fichaje:</label>
+                <div class="col">
+                    <input type="text" id="timeInput" name="time" class="form-control" placeholder="HH:MM" maxlength="5" pattern="^([01]\d|2[0-3]):([0-5]\d)$">
+                </div>
+                <div class="col">
+                    <button type="submit" class="btn btn-primary">Guardar fichaje</button>
+                </div>
+            </div>
+            <!-- Fin Selector de Horas -->
+        </form>
     </div>
 </div>
 
@@ -69,12 +83,9 @@
     {{ parent() }}
     <script src="{{ asset('js/dateSelectors.js') }}"></script>
     <script>
-        // Llamada a las funciones para llenar los selectores al cargar la página
         document.addEventListener('DOMContentLoaded', function() {
             populateYearSelector();
         });
-
-        
     </script>
 {% endblock %}
 
