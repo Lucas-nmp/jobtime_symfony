@@ -154,7 +154,8 @@ class UserController extends AbstractController
             'formattedDate' => $formattedDate,
         ]);
     }
-    */
+        */
+
 
     #[Route('/user', name: 'app_user')]
     public function index(Request $request, EntityManagerInterface $entityManager, Security $security, PdfGenerator $pdfGenerator): Response
@@ -171,6 +172,8 @@ class UserController extends AbstractController
         $year = $request->query->get('year');
         $month = $request->query->get('month');
         $day = $request->query->get('day');
+
+
     
         // Inicializar variables de rango de fechas
         $startDate = null;
@@ -215,6 +218,7 @@ class UserController extends AbstractController
         
         $session = $request->getSession();
         $session->set('signings', $signings);
+        $session->set('selectedUser', $userId);
 
         // Obtener total de horas trabajadas en el rango de fechas
         $totalHours = null; // Valor predeterminado
@@ -242,13 +246,18 @@ class UserController extends AbstractController
 
     
     #[Route('/user/print-pdf', name: 'app_user_print_pdf')]
-    public function printPdf(Request $request, PdfGenerator $pdfGenerator)
+    public function printPdf(Request $request, EntityManagerInterface $entityManager, PdfGenerator $pdfGenerator)
     {
-        $userName = $request->query->get('userName');
+        
         $totalHours = $request->query->get('totalHours');
         $formattedDate = $request->query->get('formattedDate');
         $session = $request->getSession();
         $signings = $session->get('signings');
+        $userId = $session->get('selectedUser');
+
+        $user = $entityManager->getRepository(User::class)->find($userId);
+        $userName = $user ? $user->getName() : 'Usuario desconocido';
+
 
         $htmlContent = $this->renderView('pdf/signings.html.twig', [
             'userName' => $userName,
