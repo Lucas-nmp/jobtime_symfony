@@ -154,7 +154,8 @@ class UserController extends AbstractController
             'formattedDate' => $formattedDate,
         ]);
     }
-        */
+    */
+
     #[Route('/user', name: 'app_user')]
     public function index(Request $request, EntityManagerInterface $entityManager, Security $security, PdfGenerator $pdfGenerator): Response
     {

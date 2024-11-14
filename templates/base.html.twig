@@ -14,7 +14,7 @@
 
         <header class="bg-light py-3 mb-4 border-bottom">
             <div class="container d-flex justify-content-between align-items-center">
-                <h1 class="h3 mb-0">Sistema de control horario</h1>
+                <h1 class="h3 mb-0">Control horario</h1>
                 <nav>
                     <ul class="nav">
                         <li class="nav-item">
@@ -22,6 +22,9 @@
                         </li>
 
                         {% if is_granted('ROLE_ADMIN') %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ path('sing_up') }}">Añadir fichaje</a>
+                            </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ path('user_register') }}">Registrar Trabajador</a>
                             </li>

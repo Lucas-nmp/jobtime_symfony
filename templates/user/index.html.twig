@@ -75,7 +75,7 @@
                 {% if totalHours == 0 or totalHours == "Por favor, seleccione una fecha válida" %}
                     <h5>Total:</h5>
                 {% else %}    
-                    <h5>Total horas trabajadas por   el {{ formattedDate }}: {{ totalHours }}</h5>
+                    <h5>Total horas trabajadas por el {{ formattedDate }}: {{ totalHours }}</h5>
                 {% endif %}    
             </div>
         </div>
@@ -95,73 +95,27 @@
     </div>
 </div>
 
-<script>
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/dateSelectors.js') }}"></script>
+    <script>
+        // Llamada a las funciones para llenar los selectores al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            populateYearSelector();
+        });
 
-    function getSelectedUserName() {
-        const selectElement = document.getElementById('userSelect');
-        const selectedOption = selectElement.options[selectElement.selectedIndex];
-        const userName = selectedOption.getAttribute('data-name');
-        console.log(userName);  // Aquí obtienes el nombre del usuario seleccionado
-    }
+        function showSignings() {
+            const userSelect = document.getElementById('userSelect');
+            const userId = userSelect.value;
+            const userName = userSelect.options[userSelect.selectedIndex].getAttribute('data-name');
+            const year = document.getElementById('yearSelect').value;
+            const month = document.getElementById('monthSelect').value;
+            const day = document.getElementById('daySelect').value;
 
-    function showSignings() {
-        
-        const userSelect = document.getElementById('userSelect');
-        const userId = userSelect.value;
-        const userName = userSelect.options[userSelect.selectedIndex].getAttribute('data-name');
-        const year = document.getElementById('yearSelect').value;
-        const month = document.getElementById('monthSelect').value;
-        const day = document.getElementById('daySelect').value;
+            document.getElementById('userName').value = userName;
 
-        document.getElementById('userName').value = userName;
-
-        //const userId = document.getElementById('userSelect').value;
-        //const year = document.getElementById('yearSelect').value;
-        //const month = document.getElementById('monthSelect').value;
-        //const day = document.getElementById('daySelect').value;
-        
-        window.location.href = `/user?userId=${userId}&year=${year}&month=${month}&day=${day}`;
-    }
-
-    // Generar los años desde el año actual hasta 4 años atrás
-    const currentYear = new Date().getFullYear();
-    const yearSelect = document.getElementById('yearSelect');
-    for (let i = 0; i < 5; i++) {
-        const option = document.createElement('option');
-        option.value = currentYear - i;
-        option.textContent = currentYear - i;
-        yearSelect.appendChild(option);
-    }
-
-    // Función para actualizar los días en función del mes seleccionado
-    function updateDays() {
-        const monthSelect = document.getElementById('monthSelect');
-        const daySelect = document.getElementById('daySelect');
-        const selectedMonth = monthSelect.value;
-        
-        // Vaciar opciones de día
-        daySelect.innerHTML = '<option value="">Seleccione día</option>';
-        
-        // Definir la cantidad de días en función del mes seleccionado
-        let daysInMonth;
-        if (selectedMonth === '2') { // Febrero
-            const selectedYear = parseInt(yearSelect.value);
-            daysInMonth = (selectedYear % 4 === 0 && selectedYear % 100 !== 0) || selectedYear % 400 === 0 ? 29 : 28;
-        } else if (['4', '6', '9', '11'].includes(selectedMonth)) { // Abril, Junio, Septiembre, Noviembre
-            daysInMonth = 30;
-        } else {
-            daysInMonth = 31;
+            window.location.href = `/user?userId=${userId}&year=${year}&month=${month}&day=${day}`;
         }
-
-        // Añadir los días al selector
-        for (let i = 1; i <= daysInMonth; i++) {
-            const option = document.createElement('option');
-            option.value = i;
-            option.textContent = i;
-            daySelect.appendChild(option);
-        }
-    }
-</script>
+    </script>
 {% endblock %}
-
-
+{% endblock %}
