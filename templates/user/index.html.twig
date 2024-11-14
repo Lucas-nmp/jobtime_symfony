@@ -12,13 +12,13 @@
                 <select id="userSelect" class="form-select">
                     <option value="">-- Seleccione un Usuario --</option>
                     {% for user in users %}
-                        <option value="{{ user.id }}" data-name="{{ user.name }}">{{ user.id }} - {{ user.name }}</option>
+                        <option value="{{ user.id }}" >{{ user.id }} - {{ user.name }}</option>
                     {% endfor %}
                 </select>
             {% else %}
                 <label for="userSelect" class="form-label">Usuario</label>
                 <select id="userSelect" class="form-select" disabled>
-                    <option value="{{ user.id }}" data-name="{{ user.name }}">{{ user.id }} - {{ user.name }}</option>
+                    <option value="{{ user.id }}" >{{ user.id }} - {{ user.name }}</option>
                 </select>
             {% endif %}
         </div>
@@ -81,8 +81,7 @@
         </div>
 
         <!-- Formulario para Imprimir PDF -->
-        <form action="{{ path('app_user_print_pdf') }}" method="get" target="_blank">
-            <input type="hidden" name="userName" id="userName" value="">
+        <form action="{{ path('app_user_print_pdf') }}" method="get" target="_blank">           
             <input type="hidden" name="totalHours" value="{{ totalHours }}">
             <input type="hidden" name="formattedDate" value="{{ formattedDate }}">
             <input type="hidden" name="signings" value="{{ signings|json_encode }}">
@@ -106,13 +105,10 @@
 
         function showSignings() {
             const userSelect = document.getElementById('userSelect');
-            const userId = userSelect.value;
-            const userName = userSelect.options[userSelect.selectedIndex].getAttribute('data-name');
+            const userId = userSelect.value;           
             const year = document.getElementById('yearSelect').value;
             const month = document.getElementById('monthSelect').value;
-            const day = document.getElementById('daySelect').value;
-
-            document.getElementById('userName').value = userName;
+            const day = document.getElementById('daySelect').value;     
 
             window.location.href = `/user?userId=${userId}&year=${year}&month=${month}&day=${day}`;
         }
