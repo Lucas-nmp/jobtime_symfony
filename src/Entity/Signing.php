@@ -21,6 +21,16 @@ class Signing
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
+    #[ORM\Column(type: 'boolean')]
+    private ?bool $entry = null; // Indica si es una entrada o salida.
+
+    #[ORM\Column(length: 50)]
+    private ?string $type = null; // Almacena el tipo de fichaje.
+
+    
+
+    // Getters y Setters
+
     public function getId(): ?int
     {
         return $this->id;
@@ -49,4 +59,31 @@ class Signing
 
         return $this;
     }
+
+    public function isEntry(): ?bool
+    {
+        return $this->entry;
+    }
+
+    public function setEntry(bool $entry): static
+    {
+        $this->entry = $entry;
+
+        return $this;
+    }
+
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function setType(string $type): static
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    
+
 }

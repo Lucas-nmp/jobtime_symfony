@@ -38,6 +38,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 9)]
     private ?string $phone = null;
 
+    #[ORM\Column(type: "float", nullable: false)]
+    private float $dailyWorkHours;
+
     /**
      * @var Collection<int, Signing>
      */
@@ -57,6 +60,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setId(int $id): static
     {
         $this->id = $id;
+
+        return $this;
+    }
+
+    public function getDailyWorkHours(): float
+    {
+        return $this->dailyWorkHours;
+    }
+
+    public function setDailyWorkHours(float $dailyWorkHours): static
+    {
+        $this->dailyWorkHours = $dailyWorkHours;
 
         return $this;
     }
