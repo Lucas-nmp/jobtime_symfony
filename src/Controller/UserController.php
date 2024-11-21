@@ -257,6 +257,7 @@ class UserController extends AbstractController
                     $existingUser->setEmail($form->get('email')->getData());
                     $existingUser->setPhone($form->get('phone')->getData());
                     $existingUser->setId($form->get('id')->getData());
+                    $existingUser->setDailyWorkHours($form->get('dailyWorkHours')->getData());
 
                     // Verificamos si se ingresó una nueva contraseña
                     $newPassword = $form->get('password')->getData();
@@ -296,6 +297,7 @@ class UserController extends AbstractController
                 'email' => $user->getEmail(),
                 'id' => $user->getId(),
                 'phone' => $user->getPhone(),
+                'dailyWorkHours' => $user->getDailyWorkHours(),
             ],
         ]);
     }

@@ -13,6 +13,7 @@ use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
 
 class UserType extends AbstractType
 {
@@ -23,7 +24,6 @@ class UserType extends AbstractType
                 'label' => 'User ID',
                 'attr' => ['min' => 1000, 'max' => 9999],
             ])
-            
             
 
             ->add('name', TextType::class, [
@@ -47,12 +47,21 @@ class UserType extends AbstractType
                         'exactMessage' => 'El número de teléfono no puede tener más de 9 dígitos'
                     ])
                 ]
-            ]);
-            
-            
-        ;
+            ])
+
+            ->add('dailyWorkHours', NumberType::class, [
+                'label' => 'Horas Diarias de Trabajo',
+                'attr' => [
+                    'min' => 0,
+                    'step' => 0.5, // Permitir incrementos de 0.5
+                ],
+                'constraints' => [
+                    new NotBlank(['message' => 'Este campo es obligatorio']),
+                ]
+            ]);       
     }
 
+    
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([

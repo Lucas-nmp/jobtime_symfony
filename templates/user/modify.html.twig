@@ -58,6 +58,12 @@
                 {{ form_errors(form.id) }}
             </div>
 
+            <div class="mb-3">
+                {{ form_label(form.dailyWorkHours, 'Horas Diarias de Trabajo', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.dailyWorkHours, {'attr': {'class': 'form-control', 'id': 'daily_work_hours'}}) }}
+                {{ form_errors(form.dailyWorkHours) }}
+            </div>
+
             <!-- Campo de Contraseña -->
             <div class="mb-3">
                 {{ form_label(form.password, 'Contraseña (Puede ser la misma)', {'label_attr': {'class': 'form-label'}}) }}
@@ -89,6 +95,7 @@
                         document.getElementById('user_email').value = data.user.email;
                         document.getElementById('user_phone').value = data.user.phone;
                         document.getElementById('user_password').value = '';
+                        document.getElementById('daily_work_hours').value = data.user.dailyWorkHours || '';
                     } else {
                         alert('Usuario no encontrado');
                     }
