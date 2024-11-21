@@ -51,17 +51,14 @@ class UserType extends AbstractType
 
             ->add('dailyWorkHours', NumberType::class, [
                 'label' => 'Horas Diarias de Trabajo',
-                'attr' => [
-                    'min' => 0,
-                    'step' => 0.5, // Permitir incrementos de 0.5
-                ],
+                
                 'constraints' => [
                     new NotBlank(['message' => 'Este campo es obligatorio']),
                 ]
             ]);       
     }
 
-    
+
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
