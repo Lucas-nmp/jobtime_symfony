@@ -3,28 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <title>Fichajes PDF</title>
+    <style>
+        /* Aumentamos el ancho de las columnas de Fecha y Hora */
+        table {
+            width: 100%;
+            border-collapse: collapse; /* Para que no haya separación entre las celdas */
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+
+        /* Ancho específico para las columnas de Fecha y Hora */
+        th:nth-child(1), td:nth-child(1) {
+            width: 20%; /* Ancho para la columna Fecha */
+        }
+
+        th:nth-child(2), td:nth-child(2) {
+            width: 20%; /* Ancho para la columna Hora */
+        }
+
+        th:nth-child(3), td:nth-child(3) {
+            width: 30%; /* Ancho para la columna Entrada/Salida */
+        }
+
+        th:nth-child(4), td:nth-child(4) {
+            width: 30%; /* Ancho para la columna Tipo */
+        }
+    </style>
 </head>
 <body>
     <h1>Reporte de Fichajes</h1>
     <p>Usuario: {{ userName }}</p>
 
-    <ul id="signingsList">
-        {% for signing in signings %}
-            <li>
-                Fecha: {{ signing.datetime|date("d-m-Y") }} - Hora: {{ signing.datetime|date("H:i:s") }} - 
-                {% if signing.entry == 1 %}
-                    Entrada
-                {% elseif signing.entry == 0 %}
-                    Salida
-                {% endif %}
-                - {{ signing.type }}
-            </li>
-        {% endfor %}
-    </ul>
+    <table>
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>Entrada/Salida</th>
+                <th>Tipo</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for signing in signings %}
+                <tr>
+                    <td>{{ signing.datetime|date("d-m-Y") }}</td>
+                    <td>{{ signing.datetime|date("H:i:s") }}</td>
+                    <td>
+                        {% if signing.entry == 1 %}
+                            Entrada
+                        {% elseif signing.entry == 0 %}
+                            Salida
+                        {% endif %}
+                    </td>
+                    <td>{{ signing.type }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
     <div class="mt-3">
         <h5>Total horas trabajadas el {{ formattedDate }}: {{ totalHours }}</h5>
     </div>
 </body>
 </html>
-

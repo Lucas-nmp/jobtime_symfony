@@ -70,7 +70,7 @@ class SingUpController extends AbstractController
                             $signing->setUser($user);
                             $signing->setDatetime($datetime);
                             $signing->setEntry($entry);  // Asignar el valor de 'entry'
-                            $signing->setType("manual - " . $reason);
+                            $signing->setType("Manual - " . $reason);
                             
                             
 
