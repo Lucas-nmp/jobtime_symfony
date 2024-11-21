@@ -96,12 +96,7 @@ class UserController extends AbstractController
         $distinctDaysCount = count($uniqueDays);
         $totalTheoreticalHours = 0;
         $dailyWorkHours = 0;
-        
-
-        //$userSelec = $entityManager->getRepository(User::class)->find($userId);
-        //$dailyWorkHours = $userSelec->getDailyWorkHours();
-        //$totalWorkHours = $dailyWorkHours * $distinctDaysCount;
-        
+         
 
         $session = $request->getSession();
         $session->set('signings', $signings);
@@ -116,11 +111,16 @@ class UserController extends AbstractController
             $signingsRepo = $entityManager->getRepository(Signing::class);
             $totalHours = $signingsRepo->getTotalHoursWorked($userId, $startDate, $endDate);
 
-            // Obtener las horas diarias de trabajo
-            $dailyWorkHours = $entityManager->getRepository(User::class)->getDailyWorkHoursByUserId($userId);
+
+            // Obtener las horas diarias de trabajo directamente del repositorio
+            $userRepo = $entityManager->getRepository(User::class);
+            $userSelec = $userRepo->find($userId); // Obtener el usuario
+
+            // Asegurarnos de que las horas diarias se traten como un float
+            $dailyWorkHours = (float) $userSelec->getDailyWorkHours();
 
             // Calcular el total de horas a trabajar
-            $totalTheoreticalHours = (float)$dailyWorkHours * $distinctDaysCount;
+            $totalTheoreticalHours = $dailyWorkHours * $distinctDaysCount;
 
         } else {
             // Opcionalmente, puedes establecer un mensaje o valor predeterminado para cuando no se selecciona una fecha

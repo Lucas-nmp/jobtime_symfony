@@ -33,15 +33,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->getEntityManager()->flush();
     }
 
-    public function getDailyWorkHoursByUserId(int $userId): ?int
-    {
-        $user = $this->find($userId);
-        if ($user) {
-            return $user->getDailyWorkHours(); // Asumiendo que tienes un getter para ese campo
-        }
-
-        return null;
-    }
+    
 
     //    /**
     //     * @return User[] Returns an array of User objects
