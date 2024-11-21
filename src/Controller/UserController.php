@@ -261,12 +261,54 @@ class UserController extends AbstractController
                 $form->handleRequest($request);
 
                 if ($form->isSubmitted() && $form->isValid()) {
+                    // Validar si dailyWorkHours es un número entero o termina en .5
+                    $dailyWorkHours = $form->get('dailyWorkHours')->getData();
+                    if (!preg_match('/^\d+(\.5)?$/', (string) $dailyWorkHours)) {
+                        $this->addFlash('error', 'Las horas diarias de trabajo deben ser un número entero o terminar en .5.');
+                        return $this->render('user/modify.html.twig', [
+                            'users' => $users,
+                            'form' => $form->createView(),
+                        ]);
+                    }
+
+                    // Validar si el ID o nombre ya están en uso (excepto para el usuario actual)
+                    $newUserId = $form->get('id')->getData();
+                    $newUserName = $form->get('name')->getData();
+                    $newUserEmail = $form->get('email')->getData();
+
+                    $existingUserById = $entityManager->getRepository(User::class)->find($newUserId);
+                    if ($existingUserById && $existingUserById->getId() !== $existingUser->getId()) {
+                        $this->addFlash('error', 'El ID ingresado ya está en uso.');
+                        return $this->render('user/modify.html.twig', [
+                            'users' => $users,
+                            'form' => $form->createView(),
+                        ]);
+                    }
+
+                    $existingUserByName = $entityManager->getRepository(User::class)->findOneBy(['name' => $newUserName]);
+                    if ($existingUserByName && $existingUserByName->getId() !== $existingUser->getId()) {
+                        $this->addFlash('error', 'El nombre de usuario ingresado ya está en uso.');
+                        return $this->render('user/modify.html.twig', [
+                            'users' => $users,
+                            'form' => $form->createView(),
+                        ]);
+                    }
+
+                    $existingUserByEmail = $entityManager->getRepository(User::class)->findOneBy(['email' => $newUserEmail]);
+                    if ($existingUserByEmail && $existingUserByEmail->getId() !== $existingUser->getId()) {
+                        $this->addFlash('error', 'El email de usuario ingresado ya está en uso.');
+                        return $this->render('user/modify.html.twig', [
+                            'users' => $users,
+                            'form' => $form->createView(),
+                        ]);
+                    }
+
                     // Actualizamos los campos del usuario
-                    $existingUser->setName($form->get('name')->getData());
-                    $existingUser->setEmail($form->get('email')->getData());
+                    $existingUser->setName($newUserName);
+                    $existingUser->setEmail($newUserEmail);
                     $existingUser->setPhone($form->get('phone')->getData());
-                    $existingUser->setId($form->get('id')->getData());
-                    $existingUser->setDailyWorkHours($form->get('dailyWorkHours')->getData());
+                    $existingUser->setId($newUserId);
+                    $existingUser->setDailyWorkHours($dailyWorkHours);
 
                     // Verificamos si se ingresó una nueva contraseña
                     $newPassword = $form->get('password')->getData();
@@ -279,6 +321,7 @@ class UserController extends AbstractController
                     $entityManager->flush();
 
                     $this->addFlash('success', 'Usuario modificado exitosamente');
+                    return $this->redirectToRoute('user_modify');
                 }
             }
         }
@@ -288,6 +331,7 @@ class UserController extends AbstractController
             'form' => $form->createView(),
         ]);
     }
+
 
     #[Route('/user/get/{id}', name: 'get_user_data', methods: ['GET'])]
     public function getUserData(int $id, EntityManagerInterface $entityManager): Response
