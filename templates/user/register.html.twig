@@ -50,6 +50,14 @@
             {{ form_errors(form.id) }}
         </div>
 
+        <div class="mb-3">
+            {{ form_label(form.dailyWorkHours, 'Horas Diarias de Trabajo', {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.dailyWorkHours, {'attr': {'class': 'form-control'}}) }}
+            {{ form_help(form.dailyWorkHours) }}
+            {{ form_errors(form.dailyWorkHours) }}
+        </div>
+
+
         <div class="d-flex justify-content-between">
             <a href="{{ path('app_user') }}" class="btn btn-secondary">Cancelar</a>
             <button type="submit" class="btn btn-primary">Guardar</button>

@@ -148,6 +148,15 @@ class UserController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Validar si dailyWorkHours es un número entero o termina en .5
+            $dailyWorkHours = $user->getDailyWorkHours();
+            if (!preg_match('/^\d+(\.5)?$/', (string) $dailyWorkHours)) {
+                $this->addFlash('error', 'Las horas diarias de trabajo deben ser un número entero o terminar en .5.');
+                return $this->render('user/register.html.twig', [
+                    'form' => $form->createView(),
+                ]);
+            }
+
             // Comprobar si el ID o el nombre ya existen
             $existingUserById = $entityManager->getRepository(User::class)->find($user->getId());
             $existingUserByName = $entityManager->getRepository(User::class)->findOneBy(['name' => $user->getName()]);
