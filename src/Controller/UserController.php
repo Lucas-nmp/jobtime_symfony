@@ -186,6 +186,10 @@ class UserController extends AbstractController
         
         $totalHours = $request->query->get('totalHours');
         $formattedDate = $request->query->get('formattedDate');
+
+        $formattedTheoreticalHours = $request->query->get('formattedTheoreticalHours');
+        $differenceFormatted = $request->query->get('differenceFormatted');
+
         $session = $request->getSession();
         $signings = $session->get('signings');
         $userId = $session->get('selectedUser');
@@ -200,6 +204,8 @@ class UserController extends AbstractController
             'userName' => $userName,
             'totalHours' => $totalHours,
             'formattedDate' => $formattedDate,
+            'formattedTheoreticalHours' => $formattedTheoreticalHours,
+            'differenceFormatted' => $differenceFormatted,
             'signings' => $signings,
         ]);
 
