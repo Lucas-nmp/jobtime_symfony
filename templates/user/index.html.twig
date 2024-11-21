@@ -75,7 +75,9 @@
                 {% if totalHours == 0 or totalHours == "Por favor, seleccione una fecha válida" %}
                     <h5>Total:</h5>
                 {% else %}    
-                    <h5>Total horas trabajadas en {{ formattedDate }}: {{ totalHours }} {{ distinctDaysCount }} {{ totalTheoreticalHours }} {{ dailyWorkHours|number_format(2) }} </h5>
+                    <h5>Total horas trabajadas en {{ formattedDate }}: {{ totalHours }} </h5>
+                    <p>Total de horas teóricas: {{ formattedTheoreticalHours }} horas</p>
+                    <p>Diferencia: {{ diffHours }} horas y {{ diffMinutes }} minutos</p>
                 {% endif %}    
             </div>
         </div>
@@ -84,6 +86,7 @@
         <form action="{{ path('app_user_print_pdf') }}" method="get" target="_blank">           
             <input type="hidden" name="totalHours" value="{{ totalHours }}">
             <input type="hidden" name="formattedDate" value="{{ formattedDate }}">
+
             <input type="hidden" name="signings" value="{{ signings|json_encode }}">
 
             <div class="mb-3 text-center">

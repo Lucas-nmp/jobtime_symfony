@@ -96,6 +96,12 @@ class UserController extends AbstractController
         $distinctDaysCount = count($uniqueDays);
         $totalTheoreticalHours = 0;
         $dailyWorkHours = 0;
+        $diffHours = 0;
+        $diffMinutes = 0;
+        $formattedTheoreticalHours = 0;
+        $differenceFormatted = 0;
+        $diffSeconds = 0;
+        
          
 
         $session = $request->getSession();
@@ -122,8 +128,36 @@ class UserController extends AbstractController
             // Calcular el total de horas a trabajar
             $totalTheoreticalHours = $dailyWorkHours * $distinctDaysCount;
 
+            if(floor($totalTheoreticalHours) == $totalTheoreticalHours){
+                $formattedTheoreticalHours = sprintf('%02d:00:00', (int) $totalTheoreticalHours);
+            } else {
+                $formattedTheoreticalHours = sprintf('%02d:30:00', (int) floor($totalTheoreticalHours));
+            }
+
+            // Separar totalHours (total de horas trabajadas) en hh:mm:ss
+            list($totalHoursInt, $totalMinutes, $totalSeconds) = sscanf($totalHours, '%d:%d:%d');
+            $totalHoursInSeconds = $totalHoursInt * 3600 + $totalMinutes * 60 + $totalSeconds;
+
+            // Separar formattedTheoreticalHours en hh:mm:ss
+            list($theoreticalHoursInt, $theoreticalMinutes, $theoreticalSeconds) = sscanf($formattedTheoreticalHours, '%d:%d:%d');
+            $theoreticalHoursInSeconds = $theoreticalHoursInt * 3600 + $theoreticalMinutes * 60 + $theoreticalSeconds;
+
+            // Calcular la diferencia entre ambos en segundos
+            $differenceInSeconds = abs($totalHoursInSeconds - $theoreticalHoursInSeconds);
+
+            
+
+            // Convertir la diferencia de segundos a hh:mm:ss
+            $diffHours = floor($differenceInSeconds / 3600);
+            $diffMinutes = floor(($differenceInSeconds % 3600) / 60);
+            $diffSeconds = $differenceInSeconds % 60;
+
+            // Formatear la diferencia como hh:mm:ss
+            $differenceFormatted = sprintf('%02d:%02d:%02d', $diffHours, $diffMinutes, $diffSeconds);
+
+             
+
         } else {
-            // Opcionalmente, puedes establecer un mensaje o valor predeterminado para cuando no se selecciona una fecha
             $totalHours = "Por favor, seleccione una fecha válida";
         }
         
@@ -134,9 +168,11 @@ class UserController extends AbstractController
             'role' => $role,
             'signings' => $signings,
             "totalHours" => $totalHours,
-            'distinctDaysCount' => $distinctDaysCount,
-            'totalTheoreticalHours' => $totalTheoreticalHours,
-            'dailyWorkHours' => $dailyWorkHours,
+            'diffHours' => $diffHours,
+            'diffMinutes' => $diffMinutes,
+            'diffSeconds' => $diffSeconds,
+            'differenceFormatted' => $differenceFormatted,
+            'formattedTheoreticalHours' => $formattedTheoreticalHours,
             'selectedDate' => $formattedDate, // Pasar la fecha seleccionada al template
             'formattedDate' => $formattedDate,
         ]);
@@ -153,6 +189,8 @@ class UserController extends AbstractController
         $session = $request->getSession();
         $signings = $session->get('signings');
         $userId = $session->get('selectedUser');
+
+      
 
         $user = $entityManager->getRepository(User::class)->find($userId);
         $userName = $user ? $user->getName() : 'Usuario desconocido';
