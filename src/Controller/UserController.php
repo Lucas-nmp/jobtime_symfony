@@ -41,7 +41,6 @@ class UserController extends AbstractController
         $month = $request->query->get('month');
         $day = $request->query->get('day');
 
-
     
         // Inicializar variables de rango de fechas
         $startDate = null;
@@ -83,10 +82,32 @@ class UserController extends AbstractController
     
         // Ejecutar consulta de fichajes
         $signings = $query->getQuery()->getResult();
+
+        // Contar los días distintos en los que se ha fichado
+        $uniqueDays = [];
+        foreach ($signings as $signing) {
+            $date = $signing->getDatetime()->format('Y-m-d'); // Extraer solo la fecha (sin hora)
+            if (!in_array($date, $uniqueDays)) {
+                $uniqueDays[] = $date; // Añadir día único a la lista
+            }
+        }
+
+        // Número total de días distintos trabajados
+        $distinctDaysCount = count($uniqueDays);
+        $totalTheoreticalHours = 0;
+        $dailyWorkHours = 0;
         
+
+        //$userSelec = $entityManager->getRepository(User::class)->find($userId);
+        //$dailyWorkHours = $userSelec->getDailyWorkHours();
+        //$totalWorkHours = $dailyWorkHours * $distinctDaysCount;
+        
+
         $session = $request->getSession();
         $session->set('signings', $signings);
         $session->set('selectedUser', $userId);
+
+        
 
         // Obtener total de horas trabajadas en el rango de fechas
         $totalHours = null; // Valor predeterminado
@@ -94,6 +115,13 @@ class UserController extends AbstractController
         if ($startDate && $endDate) {
             $signingsRepo = $entityManager->getRepository(Signing::class);
             $totalHours = $signingsRepo->getTotalHoursWorked($userId, $startDate, $endDate);
+
+            // Obtener las horas diarias de trabajo
+            $dailyWorkHours = $entityManager->getRepository(User::class)->getDailyWorkHoursByUserId($userId);
+
+            // Calcular el total de horas a trabajar
+            $totalTheoreticalHours = (float)$dailyWorkHours * $distinctDaysCount;
+
         } else {
             // Opcionalmente, puedes establecer un mensaje o valor predeterminado para cuando no se selecciona una fecha
             $totalHours = "Por favor, seleccione una fecha válida";
@@ -106,6 +134,9 @@ class UserController extends AbstractController
             'role' => $role,
             'signings' => $signings,
             "totalHours" => $totalHours,
+            'distinctDaysCount' => $distinctDaysCount,
+            'totalTheoreticalHours' => $totalTheoreticalHours,
+            'dailyWorkHours' => $dailyWorkHours,
             'selectedDate' => $formattedDate, // Pasar la fecha seleccionada al template
             'formattedDate' => $formattedDate,
         ]);
