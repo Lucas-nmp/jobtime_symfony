@@ -11,7 +11,13 @@
     <ul id="signingsList">
         {% for signing in signings %}
             <li>
-                Fecha: {{ signing.datetime|date("d-m-Y") }} - Hora: {{ signing.datetime|date("H:i:s") }}
+                Fecha: {{ signing.datetime|date("d-m-Y") }} - Hora: {{ signing.datetime|date("H:i:s") }} - 
+                {% if signing.entry == 1 %}
+                    Entrada
+                {% elseif signing.entry == 0 %}
+                    Salida
+                {% endif %}
+                - {{ signing.type }}
             </li>
         {% endfor %}
     </ul>
