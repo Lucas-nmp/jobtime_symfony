@@ -8,9 +8,9 @@
     <div class="card p-4" style="max-width: 600px; width: 100%;">
         <div class="mb-3">
             {% if role == 'ROLE_ADMIN' or role == 'ROLE_INSPEC' %}
-                <label for="userSelect" class="form-label">Seleccione un Usuario</label>
+                <label for="userSelect" class="form-label">Seleccione un Trabajador</label>
                 <select id="userSelect" class="form-select">
-                    <option value="">-- Seleccione un Usuario --</option>
+                    <option value="">-- Seleccione un Trabajador --</option>
                     {% for user in users %}
                         <option value="{{ user.id }}" >{{ user.id }} - {{ user.name }}</option>
                     {% endfor %}
