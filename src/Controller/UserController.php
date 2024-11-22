@@ -313,7 +313,7 @@ class UserController extends AbstractController
             'form' => $form->createView(),
         ]);
     }
-
+    
     #[Route('/user/modify', name: 'user_modify')]
     public function modifyUser(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response
     {
