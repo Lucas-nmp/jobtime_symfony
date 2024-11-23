@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group
+        android:id="@+id/actions_menu"
+        android:checkableBehavior="single"
+        android:orderInCategory="200">
+        <item
+            android:id="@+id/report"
+            android:contentDescription="@string/reports"
+            android:icon="@drawable/report_img_foreground"
+            android:title="@string/reports"
+            app:showAsAction="ifRoom|withText"/>
+
+    </group>
+    <group
+        android:id="@+id/options_menu"
+        android:orderInCategory="400">
+
+        <item
+            android:id="@+id/options"
+            android:contentDescription="@string/options"
+            android:orderInCategory="410"
+            android:title="@string/options"
+            app:showAsAction="never"/>
+
+        <item
+            android:id="@+id/about"
+            android:contentDescription="@string/about"
+            android:orderInCategory="440"
+            android:title="@string/about"
+            app:showAsAction="never" />
+
+        <item
+            android:id="@+id/go_out"
+            android:contentDescription="@string/go_out"
+            android:orderInCategory="440"
+            android:title="@string/go_out"
+            app:showAsAction="never" />
+
+    </group>
+
+
+</menu>

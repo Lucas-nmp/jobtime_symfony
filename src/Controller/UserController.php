@@ -41,7 +41,6 @@ class UserController extends AbstractController
         $month = $request->query->get('month');
         $day = $request->query->get('day');
 
-
     
         // Inicializar variables de rango de fechas
         $startDate = null;
@@ -83,10 +82,33 @@ class UserController extends AbstractController
     
         // Ejecutar consulta de fichajes
         $signings = $query->getQuery()->getResult();
+
+        // Contar los días distintos en los que se ha fichado
+        $uniqueDays = [];
+        foreach ($signings as $signing) {
+            $date = $signing->getDatetime()->format('Y-m-d'); // Extraer solo la fecha (sin hora)
+            if (!in_array($date, $uniqueDays)) {
+                $uniqueDays[] = $date; // Añadir día único a la lista
+            }
+        }
+
+        // Número total de días distintos trabajados
+        $distinctDaysCount = count($uniqueDays);
+        $totalTheoreticalHours = 0;
+        $dailyWorkHours = 0;
+        $diffHours = 0;
+        $diffMinutes = 0;
+        $formattedTheoreticalHours = 0;
+        $differenceFormatted = 0;
+        $diffSeconds = 0;
         
+         
+
         $session = $request->getSession();
         $session->set('signings', $signings);
         $session->set('selectedUser', $userId);
+
+        
 
         // Obtener total de horas trabajadas en el rango de fechas
         $totalHours = null; // Valor predeterminado
@@ -94,8 +116,48 @@ class UserController extends AbstractController
         if ($startDate && $endDate) {
             $signingsRepo = $entityManager->getRepository(Signing::class);
             $totalHours = $signingsRepo->getTotalHoursWorked($userId, $startDate, $endDate);
+
+
+            // Obtener las horas diarias de trabajo directamente del repositorio
+            $userRepo = $entityManager->getRepository(User::class);
+            $userSelec = $userRepo->find($userId); // Obtener el usuario
+
+            // Asegurarnos de que las horas diarias se traten como un float
+            $dailyWorkHours = (float) $userSelec->getDailyWorkHours();
+
+            // Calcular el total de horas a trabajar
+            $totalTheoreticalHours = $dailyWorkHours * $distinctDaysCount;
+
+            if(floor($totalTheoreticalHours) == $totalTheoreticalHours){
+                $formattedTheoreticalHours = sprintf('%02d:00:00', (int) $totalTheoreticalHours);
+            } else {
+                $formattedTheoreticalHours = sprintf('%02d:30:00', (int) floor($totalTheoreticalHours));
+            }
+
+            // Separar totalHours (total de horas trabajadas) en hh:mm:ss
+            list($totalHoursInt, $totalMinutes, $totalSeconds) = sscanf($totalHours, '%d:%d:%d');
+            $totalHoursInSeconds = $totalHoursInt * 3600 + $totalMinutes * 60 + $totalSeconds;
+
+            // Separar formattedTheoreticalHours en hh:mm:ss
+            list($theoreticalHoursInt, $theoreticalMinutes, $theoreticalSeconds) = sscanf($formattedTheoreticalHours, '%d:%d:%d');
+            $theoreticalHoursInSeconds = $theoreticalHoursInt * 3600 + $theoreticalMinutes * 60 + $theoreticalSeconds;
+
+            // Calcular la diferencia entre ambos en segundos
+            $differenceInSeconds = abs($totalHoursInSeconds - $theoreticalHoursInSeconds);
+
+            
+
+            // Convertir la diferencia de segundos a hh:mm:ss
+            $diffHours = floor($differenceInSeconds / 3600);
+            $diffMinutes = floor(($differenceInSeconds % 3600) / 60);
+            $diffSeconds = $differenceInSeconds % 60;
+
+            // Formatear la diferencia como hh:mm:ss
+            $differenceFormatted = sprintf('%02d:%02d:%02d', $diffHours, $diffMinutes, $diffSeconds);
+
+             
+
         } else {
-            // Opcionalmente, puedes establecer un mensaje o valor predeterminado para cuando no se selecciona una fecha
             $totalHours = "Por favor, seleccione una fecha válida";
         }
         
@@ -106,6 +168,11 @@ class UserController extends AbstractController
             'role' => $role,
             'signings' => $signings,
             "totalHours" => $totalHours,
+            'diffHours' => $diffHours,
+            'diffMinutes' => $diffMinutes,
+            'diffSeconds' => $diffSeconds,
+            'differenceFormatted' => $differenceFormatted,
+            'formattedTheoreticalHours' => $formattedTheoreticalHours,
             'selectedDate' => $formattedDate, // Pasar la fecha seleccionada al template
             'formattedDate' => $formattedDate,
         ]);
@@ -119,9 +186,15 @@ class UserController extends AbstractController
         
         $totalHours = $request->query->get('totalHours');
         $formattedDate = $request->query->get('formattedDate');
+
+        $formattedTheoreticalHours = $request->query->get('formattedTheoreticalHours');
+        $differenceFormatted = $request->query->get('differenceFormatted');
+
         $session = $request->getSession();
         $signings = $session->get('signings');
         $userId = $session->get('selectedUser');
+
+      
 
         $user = $entityManager->getRepository(User::class)->find($userId);
         $userName = $user ? $user->getName() : 'Usuario desconocido';
@@ -131,6 +204,8 @@ class UserController extends AbstractController
             'userName' => $userName,
             'totalHours' => $totalHours,
             'formattedDate' => $formattedDate,
+            'formattedTheoreticalHours' => $formattedTheoreticalHours,
+            'differenceFormatted' => $differenceFormatted,
             'signings' => $signings,
         ]);
 
@@ -148,6 +223,15 @@ class UserController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Validar si dailyWorkHours es un número entero o termina en .5
+            $dailyWorkHours = $user->getDailyWorkHours();
+            if (!preg_match('/^\d+(\.5)?$/', (string) $dailyWorkHours)) {
+                $this->addFlash('error', 'Las horas diarias de trabajo deben ser un número entero o terminar en .5.');
+                return $this->render('user/register.html.twig', [
+                    'form' => $form->createView(),
+                ]);
+            }
+
             // Comprobar si el ID o el nombre ya existen
             $existingUserById = $entityManager->getRepository(User::class)->find($user->getId());
             $existingUserByName = $entityManager->getRepository(User::class)->findOneBy(['name' => $user->getName()]);
@@ -229,7 +313,7 @@ class UserController extends AbstractController
             'form' => $form->createView(),
         ]);
     }
-
+    
     #[Route('/user/modify', name: 'user_modify')]
     public function modifyUser(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response
     {
@@ -252,11 +336,54 @@ class UserController extends AbstractController
                 $form->handleRequest($request);
 
                 if ($form->isSubmitted() && $form->isValid()) {
+                    // Validar si dailyWorkHours es un número entero o termina en .5
+                    $dailyWorkHours = $form->get('dailyWorkHours')->getData();
+                    if (!preg_match('/^\d+(\.5)?$/', (string) $dailyWorkHours)) {
+                        $this->addFlash('error', 'Las horas diarias de trabajo deben ser un número entero o terminar en .5.');
+                        return $this->render('user/modify.html.twig', [
+                            'users' => $users,
+                            'form' => $form->createView(),
+                        ]);
+                    }
+
+                    // Validar si el ID o nombre ya están en uso (excepto para el usuario actual)
+                    $newUserId = $form->get('id')->getData();
+                    $newUserName = $form->get('name')->getData();
+                    $newUserEmail = $form->get('email')->getData();
+
+                    $existingUserById = $entityManager->getRepository(User::class)->find($newUserId);
+                    if ($existingUserById && $existingUserById->getId() !== $existingUser->getId()) {
+                        $this->addFlash('error', 'El ID ingresado ya está en uso.');
+                        return $this->render('user/modify.html.twig', [
+                            'users' => $users,
+                            'form' => $form->createView(),
+                        ]);
+                    }
+
+                    $existingUserByName = $entityManager->getRepository(User::class)->findOneBy(['name' => $newUserName]);
+                    if ($existingUserByName && $existingUserByName->getId() !== $existingUser->getId()) {
+                        $this->addFlash('error', 'El nombre de usuario ingresado ya está en uso.');
+                        return $this->render('user/modify.html.twig', [
+                            'users' => $users,
+                            'form' => $form->createView(),
+                        ]);
+                    }
+
+                    $existingUserByEmail = $entityManager->getRepository(User::class)->findOneBy(['email' => $newUserEmail]);
+                    if ($existingUserByEmail && $existingUserByEmail->getId() !== $existingUser->getId()) {
+                        $this->addFlash('error', 'El email de usuario ingresado ya está en uso.');
+                        return $this->render('user/modify.html.twig', [
+                            'users' => $users,
+                            'form' => $form->createView(),
+                        ]);
+                    }
+
                     // Actualizamos los campos del usuario
-                    $existingUser->setName($form->get('name')->getData());
-                    $existingUser->setEmail($form->get('email')->getData());
+                    $existingUser->setName($newUserName);
+                    $existingUser->setEmail($newUserEmail);
                     $existingUser->setPhone($form->get('phone')->getData());
-                    $existingUser->setId($form->get('id')->getData());
+                    $existingUser->setId($newUserId);
+                    $existingUser->setDailyWorkHours($dailyWorkHours);
 
                     // Verificamos si se ingresó una nueva contraseña
                     $newPassword = $form->get('password')->getData();
@@ -269,6 +396,7 @@ class UserController extends AbstractController
                     $entityManager->flush();
 
                     $this->addFlash('success', 'Usuario modificado exitosamente');
+                    return $this->redirectToRoute('user_modify');
                 }
             }
         }
@@ -278,6 +406,7 @@ class UserController extends AbstractController
             'form' => $form->createView(),
         ]);
     }
+
 
     #[Route('/user/get/{id}', name: 'get_user_data', methods: ['GET'])]
     public function getUserData(int $id, EntityManagerInterface $entityManager): Response
@@ -296,6 +425,7 @@ class UserController extends AbstractController
                 'email' => $user->getEmail(),
                 'id' => $user->getId(),
                 'phone' => $user->getPhone(),
+                'dailyWorkHours' => $user->getDailyWorkHours(),
             ],
         ]);
     }

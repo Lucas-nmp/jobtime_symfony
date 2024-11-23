@@ -25,9 +25,10 @@ class SingUpController extends AbstractController
             $month = $request->request->get('month');
             $day = $request->request->get('day');
             $time = $request->request->get('time');
+            $reason = $request->request->get('reason');
 
             // Validar que el usuario, año, mes, día y hora estén presentes
-            if (empty($userId) || empty($year) || empty($month) || empty($day) || empty($time)) {
+            if (empty($userId) || empty($year) || empty($month) || empty($day) || empty($time) || empty($reason)) {
                 $this->addFlash('error', 'Todos los campos son obligatorios.');
             } else {
                 // Validar el formato de la hora
@@ -46,9 +47,32 @@ class SingUpController extends AbstractController
                         if ($datetime === false) {
                             $this->addFlash('error', 'Fecha y hora no válidas.');
                         } else {
+                            // Consultar cuántos fichajes existen en la misma fecha para determinar el valor de 'entry'
+                            // Establecer el inicio y fin del día para hacer la consulta
+                            $startOfDay = (clone $datetime)->setTime(0, 0);
+                            $endOfDay = (clone $datetime)->setTime(23, 59, 59);
+
+                            // Contar los fichajes realizados en la misma fecha
+                            $existingSigningsCount = $entityManager->getRepository(Signing::class)
+                                ->createQueryBuilder('s')
+                                ->where('s.datetime BETWEEN :startOfDay AND :endOfDay')
+                                ->setParameter('startOfDay', $startOfDay)
+                                ->setParameter('endOfDay', $endOfDay)
+                                ->select('COUNT(s.id)')
+                                ->getQuery()
+                                ->getSingleScalarResult();
+
+                            // El valor de 'entry' será true si el número de fichajes es par, y false si es impar
+                            $entry = ($existingSigningsCount % 2 === 0); // True si es par (entrada), false si es impar (salida)
+
+                            // Crear el objeto Signing
                             $signing = new Signing();
                             $signing->setUser($user);
                             $signing->setDatetime($datetime);
+                            $signing->setEntry($entry);  // Asignar el valor de 'entry'
+                            $signing->setType("Manual - " . $reason);
+                            
+                            
 
                             // Persistir el fichaje en la base de datos
                             $entityManager->persist($signing);
@@ -56,6 +80,7 @@ class SingUpController extends AbstractController
 
                             // Mostrar mensaje de éxito
                             $this->addFlash('success', 'Fichaje registrado correctamente.');
+                            
                         }
                     }
                 }

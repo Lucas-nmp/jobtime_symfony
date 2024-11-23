@@ -7,10 +7,10 @@
 <div class="d-flex justify-content-center align-items-center" style="min-height: 30vh;">
     <div class="card p-4" style="max-width: 600px; width: 100%;">
         <div class="mb-3">
-            {% if role == 'ROLE_ADMIN' %}
-                <label for="userSelect" class="form-label">Seleccione un Usuario</label>
+            {% if role == 'ROLE_ADMIN' or role == 'ROLE_INSPEC' %}
+                <label for="userSelect" class="form-label">Seleccione un Trabajador</label>
                 <select id="userSelect" class="form-select">
-                    <option value="">-- Seleccione un Usuario --</option>
+                    <option value="">-- Seleccione un Trabajador --</option>
                     {% for user in users %}
                         <option value="{{ user.id }}" >{{ user.id }} - {{ user.name }}</option>
                     {% endfor %}
@@ -75,7 +75,9 @@
                 {% if totalHours == 0 or totalHours == "Por favor, seleccione una fecha válida" %}
                     <h5>Total:</h5>
                 {% else %}    
-                    <h5>Total horas trabajadas en {{ formattedDate }}: {{ totalHours }}</h5>
+                    <h5>Total horas trabajadas en {{ formattedDate }}: {{ totalHours }} </h5>
+                    <p>Total de horas teóricas: {{ formattedTheoreticalHours }} horas</p>
+                    <p>Diferencia: {{ diffHours }} horas y {{ diffMinutes }} minutos</p>
                 {% endif %}    
             </div>
         </div>
@@ -84,6 +86,10 @@
         <form action="{{ path('app_user_print_pdf') }}" method="get" target="_blank">           
             <input type="hidden" name="totalHours" value="{{ totalHours }}">
             <input type="hidden" name="formattedDate" value="{{ formattedDate }}">
+
+             <input type="hidden" name="formattedTheoreticalHours" value="{{ formattedTheoreticalHours }}">
+            <input type="hidden" name="differenceFormatted" value="{{ diffHours }}:{{ diffMinutes }}">
+
             <input type="hidden" name="signings" value="{{ signings|json_encode }}">
 
             <div class="mb-3 text-center">

@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
@@ -26,8 +27,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private array $roles = [];
 
+  
     /**
      * @var string The hashed password
+     * @Assert\NotBlank(message="La contraseña no puede estar vacía.")
+     * @Assert\Length(
+     *     min=8,
+     *     minMessage="La contraseña debe tener al menos {{ limit }} caracteres."
+     * )
+     * @Assert\Regex(
+     *     pattern="/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/",
+     *     message="La contraseña debe incluir al menos una letra mayúscula, una minúscula, un número y un carácter especial."
+     * )
      */
     #[ORM\Column]
     private ?string $password = null;
@@ -37,6 +48,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 9)]
     private ?string $phone = null;
+
+    #[ORM\Column(type: "float", nullable: false)]
+    private float $dailyWorkHours;
 
     /**
      * @var Collection<int, Signing>
@@ -57,6 +71,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setId(int $id): static
     {
         $this->id = $id;
+
+        return $this;
+    }
+
+    public function getDailyWorkHours(): float
+    {
+        return $this->dailyWorkHours;
+    }
+
+    public function setDailyWorkHours(float $dailyWorkHours): static
+    {
+        $this->dailyWorkHours = $dailyWorkHours;
 
         return $this;
     }
