@@ -36,7 +36,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      *     minMessage="La contraseña debe tener al menos {{ limit }} caracteres."
      * )
      * @Assert\Regex(
-     *     pattern="/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/",
+     *     pattern="/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&+-/.,€#])[A-Za-z\d@$!%*?&]+$/",
      *     message="La contraseña debe incluir al menos una letra mayúscula, una minúscula, un número y un carácter especial."
      * )
      */
