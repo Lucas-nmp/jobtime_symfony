@@ -111,8 +111,20 @@
 
         function showSignings() {
             const userSelect = document.getElementById('userSelect');
-            const userId = userSelect.value;           
+            const userId = userSelect.value; 
             const year = document.getElementById('yearSelect').value;
+
+            if (!userId) {
+                alert('Por favor, seleccione un trabajador antes de consultar los fichajes.');
+                return; // Evitar la redirección
+            }
+
+            if (!year) {
+                alert('Por favor, seleccione al menos el año antes de consultar los fichajes.');
+                return; // Evitar la redirección
+            }
+
+            
             const month = document.getElementById('monthSelect').value;
             const day = document.getElementById('daySelect').value;     
 
