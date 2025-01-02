@@ -10,6 +10,21 @@
             border-collapse: collapse; /* Para que no haya separación entre las celdas */
         }
 
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .companydata {
+            text-align: right;
+        }
+
+        .workerdata {
+            text-align: left;
+        }
+
         th, td {
             padding: 8px;
             text-align: left;
@@ -40,7 +55,17 @@
 </head>
 <body>
     <h1>Reporte de Fichajes</h1>
-    <p>Trabajador: {{ userName }}</p>
+    <div class="header-container">
+        <div class="companydata">
+            <p>Nombre empresa</p>
+            <p>CIF: B14224433</p>
+            <p>Dirección: San Francisco 12</p>
+        </div>
+        <div class="workerdata">
+            <p><strong>Trabajador:</strong> {{ userName }}</p>
+            <p>DNI: </p
+        </div>
+    </div>
 
     <table>
         <thead>
